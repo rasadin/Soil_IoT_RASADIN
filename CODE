@@ -1,0 +1,51 @@
+#include <OneWire.h>
+#include <DallasTemperature.h>
+#include <YunClient.h>
+#include <ThingerYun.h>
+#include <max6675.h>
+ 
+int ktcSO = 8;
+int ktcCS = 9;
+int ktcCLK = 10;
+ 
+MAX6675 ktc(ktcCLK, ktcCS, ktcSO);
+#define USERNAME "rasadin"
+#define DEVICE_ID "rasa"
+#define DEVICE_CREDENTIAL "!kzjW%H3PBM%"
+ThingerYun thing(USERNAME, DEVICE_ID, DEVICE_CREDENTIAL);
+
+
+
+
+void setup() {
+Bridge.begin();
+thing["PH"] >> outputValue(ph());
+thing["Therm"] >> outputValue(Therm());
+};
+
+ 
+void loop() {
+thing.handle();
+pson data;
+data["ph"] = ph();
+data["Therm"] = Therm();
+thing.write_bucket("rasadin_bucket_afia", data);  
+}
+
+float ph() {
+ float sensorValue = analogRead(A0);
+ float fix=0;
+ delay(20);
+ // Convert the analog reading (which goes from 0 - 1023) to a voltage (0 - 5V):
+ float PH_value = sensorValue * (5.0 / 1023.0);
+ float PH_value_main = PH_value + fix;
+ // print out the value of pH:
+return PH_value_main;
+ 
+ }
+
+float Therm(){
+  ktc.readCelsius();
+  return ktc.readCelsius();
+  //delay(10);
+  }
